@@ -78,7 +78,7 @@ function initResumeAnalyzer() {
   const state = document.getElementById("analysisState");
   const results = document.getElementById("analysisResults");
 
-  if (!form || !fileInput || !state || !results) return;
+  if (!form || !fileInput || !results) return;
 
   const summaryEl = results.querySelector("[data-summary]");
   const contactEl = results.querySelector("[data-contact]");
@@ -86,8 +86,10 @@ function initResumeAnalyzer() {
   const recsEl = results.querySelector("[data-recommendations]");
 
   function setLoading(isLoading) {
+    if (!state) return;
     state.hidden = !isLoading;
-    form.querySelector("button[type='submit']").disabled = isLoading;
+    const submitBtn = form.querySelector("button[type='submit']");
+    if (submitBtn) submitBtn.disabled = isLoading;
   }
 
   function resetResults() {
@@ -97,8 +99,10 @@ function initResumeAnalyzer() {
   }
 
   // Ensure initial state is idle
-  state.hidden = true;
   results.hidden = true;
+  if (state) {
+    state.hidden = true;
+  }
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -108,6 +112,15 @@ function initResumeAnalyzer() {
     if (!file) {
       alert("Please choose a resume file to analyze.");
       return;
+    }
+
+    // If auth helpers are available, require login first
+    if (typeof getSession === "function") {
+      const session = getSession();
+      if (!session || !session.email) {
+        window.location.href = "./login.html";
+        return;
+      }
     }
 
     setLoading(true);
