@@ -190,16 +190,6 @@ function initResumeAnalyzer() {
         skills,
         recommendations,
       });
-
-      if (typeof getSession === "function") {
-        const session = getSession();
-        if (session && session.email) {
-          const goToDashboard = confirm("Analysis completed. Do you want to view this and previous analyses on your dashboard?");
-          if (goToDashboard) {
-            window.location.href = "./dashboard.html";
-          }
-        }
-      }
     } catch (err) {
       console.error(err);
       alert("Something went wrong while analyzing your resume. Please try again with a text‑based file.");
