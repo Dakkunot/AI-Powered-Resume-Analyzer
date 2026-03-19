@@ -66,6 +66,28 @@ body {
   font-size: 14px;
 }
 
+.nav-links .link {
+  border-bottom: none;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: rgba(255, 255, 255, 0.9);
+}
+.nav-links .link:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(15, 23, 42, 0.5);
+}
+.nav-links .link:last-child {
+  border-color: transparent;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  box-shadow: 0 12px 30px rgba(124, 92, 255, 0.3);
+  font-weight: 600;
+}
+.nav-links .link:last-child:hover {
+  filter: brightness(1.05);
+}
+
 .card--hero {
   width: 100%;
   display: grid;
