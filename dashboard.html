@@ -13,8 +13,8 @@
     </script>
   </head>
   <body>
-    <main class="container">
-      <section class="card" aria-label="Dashboard">
+    <main class="container container--wide">
+      <section class="card card--hero" aria-label="Dashboard">
         <div class="topbar">
           <div class="brand" style="margin: 0">
             <a href="./index.html" class="brand-link">
@@ -26,12 +26,55 @@
           <button class="ghost" type="button" data-logout>Log out</button>
         </div>
 
-        <p class="subtitle" style="margin-bottom: 14px">
-          You’re logged in as <span class="pill" data-who></span>
-        </p>
+        <div class="dashboard-grid">
+          <div>
+            <p class="subtitle" style="margin-bottom: 14px">
+              You’re logged in as <span class="pill" data-who></span>
+            </p>
 
-        <div class="message" data-kind="ok">
-          This is a demo page. On a real site, this is where you’d show your app content.
+            <div class="message" data-kind="ok">
+              Your most recent resume analysis is shown on the right. You can re-analyze from the home page at any time.
+            </div>
+
+            <section class="analysis-history" aria-label="Recent analyses">
+              <h2>Recent analyses</h2>
+              <p class="small" style="margin-bottom: 8px">Up to your last 10 uploads.</p>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Estimated experience</th>
+                    <th>Skills detected</th>
+                  </tr>
+                </thead>
+                <tbody data-history-rows>
+                  <tr class="empty">
+                    <td colspan="3">No analyses yet. Upload a resume from the home page to get started.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+          </div>
+
+          <section class="analysis-results" aria-label="Latest analysis" data-dashboard-results>
+            <h2>Latest analysis</h2>
+            <p class="analysis-summary" data-summary></p>
+
+            <div class="analysis-grid">
+              <div class="analysis-card">
+                <h3>Contact & basics</h3>
+                <ul data-contact></ul>
+              </div>
+              <div class="analysis-card">
+                <h3>Skills & keywords</h3>
+                <ul data-skills></ul>
+              </div>
+              <div class="analysis-card analysis-card--wide">
+                <h3>Recommendations</h3>
+                <ul data-recommendations></ul>
+              </div>
+            </div>
+          </section>
         </div>
       </section>
     </main>
