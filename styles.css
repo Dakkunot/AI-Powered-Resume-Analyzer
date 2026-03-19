@@ -216,6 +216,9 @@ input:focus {
   font-size: 13px;
   color: var(--muted);
 }
+.analysis-state[hidden] {
+  display: none !important;
+}
 .spinner {
   width: 18px;
   height: 18px;
@@ -232,6 +235,9 @@ input:focus {
   padding: 14px 14px 16px;
   display: grid;
   gap: 12px;
+}
+.analysis-results[hidden] {
+  display: none !important;
 }
 .analysis-results h2 {
   font-size: 16px;
