@@ -96,6 +96,10 @@ function initResumeAnalyzer() {
     [contactEl, skillsEl, recsEl].forEach((el) => el && (el.innerHTML = ""));
   }
 
+  // Ensure initial state is idle
+  state.hidden = true;
+  results.hidden = true;
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     resetResults();
