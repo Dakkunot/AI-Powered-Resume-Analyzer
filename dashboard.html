@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./auth.js" defer></script>
+    <script defer>
+      window.addEventListener("DOMContentLoaded", () => {
+        window.AuthDemo.initDashboardPage();
+      });
+    </script>
+  </head>
+  <body>
+    <main class="container">
+      <section class="card" aria-label="Dashboard">
+        <div class="topbar">
+          <div class="brand" style="margin: 0">
+            <div class="logo" aria-hidden="true"></div>
+            <h1 style="margin: 0">Dashboard</h1>
+          </div>
+          <button class="ghost" type="button" data-logout>Log out</button>
+        </div>
+
+        <p class="subtitle" style="margin-bottom: 14px">
+          You’re logged in as <span class="pill" data-who></span>
+        </p>
+
+        <div class="message" data-kind="ok">
+          This is a placeholder page. On a real site, this is where you’d show your app content.
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
+

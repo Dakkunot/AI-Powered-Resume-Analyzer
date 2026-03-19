@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sign up</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./auth.js" defer></script>
+    <script defer>
+      window.addEventListener("DOMContentLoaded", () => {
+        window.AuthDemo.initSignupPage();
+      });
+    </script>
+  </head>
+  <body>
+    <main class="container">
+      <section class="card" aria-label="Sign up">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <h1>Create account</h1>
+        </div>
+        <p class="subtitle">Sign up and you’ll be redirected back to login.</p>
+
+        <form data-form="signup" novalidate>
+          <label>
+            Email
+            <input id="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required />
+          </label>
+
+          <label>
+            Password
+            <input id="password" type="password" autocomplete="new-password" placeholder="At least 6 characters" required />
+          </label>
+
+          <label>
+            Confirm password
+            <input id="confirmPassword" type="password" autocomplete="new-password" placeholder="Repeat password" required />
+          </label>
+
+          <div class="row">
+            <button class="btn" type="submit">Create account</button>
+            <a class="link" href="./index.html">Back to login</a>
+          </div>
+        </form>
+
+        <p class="message" data-message hidden></p>
+        <p class="small" style="margin-top: 12px">
+          Note: this is a front-end demo. Accounts are stored in your browser’s localStorage.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
+
