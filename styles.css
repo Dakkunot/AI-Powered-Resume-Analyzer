@@ -74,9 +74,19 @@ body {
 }
 
 .brand-title {
-  font-size: 16px;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.96);
+  font-size: 28px;
+  font-weight: 850;
   letter-spacing: 0.2px;
+  line-height: 1;
 }
 
 .logo {
