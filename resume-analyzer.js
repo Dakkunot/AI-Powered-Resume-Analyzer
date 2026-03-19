@@ -72,6 +72,28 @@ function buildRecommendations(text, skills, experienceYears) {
   return recs;
 }
 
+function saveAnalysisForUser(payload) {
+  if (typeof getSession !== "function") return;
+  const session = getSession();
+  if (!session || !session.email) return;
+
+  try {
+    const raw = localStorage.getItem("demo_analyses_v1");
+    const all = raw ? JSON.parse(raw) : {};
+    const email = session.email;
+    const list = Array.isArray(all[email]) ? all[email] : [];
+    list.unshift({
+      ...payload,
+      analyzedAt: Date.now(),
+      id: Date.now().toString(),
+    });
+    all[email] = list.slice(0, 10);
+    localStorage.setItem("demo_analyses_v1", JSON.stringify(all));
+  } catch {
+    // ignore storage errors
+  }
+}
+
 function initResumeAnalyzer() {
   const form = document.getElementById("analyzerForm");
   const fileInput = document.getElementById("resumeFile");
@@ -161,6 +183,23 @@ function initResumeAnalyzer() {
       }
 
       results.hidden = false;
+
+      saveAnalysisForUser({
+        emailInDoc: email,
+        experienceYears,
+        skills,
+        recommendations,
+      });
+
+      if (typeof getSession === "function") {
+        const session = getSession();
+        if (session && session.email) {
+          const goToDashboard = confirm("Analysis completed. Do you want to view this and previous analyses on your dashboard?");
+          if (goToDashboard) {
+            window.location.href = "./dashboard.html";
+          }
+        }
+      }
     } catch (err) {
       console.error(err);
       alert("Something went wrong while analyzing your resume. Please try again with a text‑based file.");
