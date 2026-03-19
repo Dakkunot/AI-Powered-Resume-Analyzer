@@ -6,6 +6,7 @@
     <title>Dashboard</title>
     <link rel="stylesheet" href="./styles.css" />
     <script src="./auth.js" defer></script>
+    <script src="./resume-analyzer.js" defer></script>
     <script defer>
       window.addEventListener("DOMContentLoaded", () => {
         window.AuthDemo.initDashboardPage();
@@ -56,7 +57,29 @@
             </section>
           </div>
 
-          <section class="analysis-results" aria-label="Latest analysis" data-dashboard-results>
+          <section class="analyzer-panel" aria-label="Upload and analysis panel">
+            <form id="analyzerForm" novalidate>
+              <label class="file-label">
+                <span>Upload your resume (PDF, DOCX, or TXT)</span>
+                <input id="resumeFile" type="file" accept=".pdf,.doc,.docx,.txt" />
+              </label>
+
+              <button class="btn btn--full" type="submit">Analyze resume</button>
+            </form>
+
+            <div id="analysisState" class="analysis-state" hidden>
+              <div class="spinner" aria-hidden="true"></div>
+              <p>Analyzing your resume with AI…</p>
+            </div>
+
+            <section
+              id="analysisResults"
+              class="analysis-results"
+              aria-live="polite"
+              hidden
+              aria-label="Latest analysis"
+              data-dashboard-results
+            >
             <h2>Latest analysis</h2>
             <p class="analysis-summary" data-summary></p>
 
@@ -74,6 +97,7 @@
                 <ul data-recommendations></ul>
               </div>
             </div>
+          </section>
           </section>
         </div>
       </section>
