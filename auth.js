@@ -1,6 +1,7 @@
 const STORAGE_KEYS = {
   users: "demo_users_v2",
   session: "demo_session_v2",
+  analyses: "demo_analyses_v1",
 };
 
 function clearLegacyStorage() {
@@ -146,6 +147,79 @@ function initDashboardPage() {
   const who = document.querySelector("[data-who]");
   const logoutBtn = document.querySelector("[data-logout]");
   if (who) who.textContent = session?.email || "";
+
+   // Populate dashboard with latest analysis data
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.analyses);
+    const all = raw ? JSON.parse(raw) : {};
+    const list = Array.isArray(all[session.email]) ? all[session.email] : [];
+
+    const historyBody = document.querySelector("[data-history-rows]");
+    const resultsRoot = document.querySelector("[data-dashboard-results]");
+    const summaryEl = resultsRoot?.querySelector("[data-summary]");
+    const contactEl = resultsRoot?.querySelector("[data-contact]");
+    const skillsEl = resultsRoot?.querySelector("[data-skills]");
+    const recsEl = resultsRoot?.querySelector("[data-recommendations]");
+
+    if (historyBody) {
+      historyBody.innerHTML = "";
+      if (!list.length) {
+        historyBody.innerHTML = '<tr class="empty"><td colspan="3">No analyses yet. Upload a resume from the home page to get started.</td></tr>';
+      } else {
+        historyBody.innerHTML = list
+          .map((item) => {
+            const date = new Date(item.analyzedAt).toLocaleString();
+            const exp = item.experienceYears != null ? `${item.experienceYears}+ yrs` : "N/A";
+            const skills = (item.skills || []).slice(0, 4).join(", ") || "—";
+            return `<tr><td>${date}</td><td>${exp}</td><td>${skills}</td></tr>`;
+          })
+          .join("");
+      }
+    }
+
+    const latest = list[0];
+    if (latest && resultsRoot) {
+      if (summaryEl) {
+        summaryEl.textContent =
+          "This is your latest saved analysis. Re-run the analyzer from the home page to refresh these insights.";
+      }
+
+      if (contactEl) {
+        const items = [];
+        items.push(
+          `<li>${
+            latest.emailInDoc
+              ? "Detected email: <strong>" + latest.emailInDoc + "</strong>"
+              : "No email address detected in the last analyzed resume."
+          }</li>`
+        );
+        items.push(
+          `<li>${
+            latest.experienceYears != null
+              ? "Estimated years across listed experience: <strong>" + latest.experienceYears + "+</strong>"
+              : "Could not confidently estimate total years of experience."
+          }</li>`
+        );
+        contactEl.innerHTML = items.join("");
+      }
+
+      if (skillsEl) {
+        const skills = latest.skills || [];
+        skillsEl.innerHTML = skills.length
+          ? skills.map((s) => `<li>${s}</li>`).join("")
+          : "<li>No common technical skills from our catalog were clearly detected. Make sure your key skills are easy to skim.</li>";
+      }
+
+      if (recsEl) {
+        const recs = latest.recommendations || [];
+        recsEl.innerHTML = recs.length ? recs.map((r) => `<li>${r}</li>`).join("") : "<li>No recommendations stored.</li>";
+      }
+    } else if (resultsRoot) {
+      resultsRoot.hidden = true;
+    }
+  } catch {
+    // ignore dashboard population errors
+  }
 
   logoutBtn?.addEventListener("click", () => {
     clearSession();
