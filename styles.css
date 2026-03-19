@@ -65,6 +65,20 @@ body {
 }
 .brand--hero { align-items: flex-start; }
 
+.brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.brand-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
 .logo {
   width: 36px;
   height: 36px;
