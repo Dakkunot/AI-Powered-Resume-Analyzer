@@ -6,6 +6,7 @@
     <title>AI-Powered Resume Analyzer</title>
     <link rel="stylesheet" href="./styles.css" />
     <script src="./auth.js" defer></script>
+    <script src="./resume-analyzer.js" defer></script>
   </head>
   <body>
     <main class="container container--wide">
@@ -33,14 +34,40 @@
           </ul>
         </div>
 
-        <div class="analyzer-panel" aria-label="Get started">
-          <p class="subtitle">
-            To analyze your resume and view your results dashboard, please log in or create an account.
-          </p>
-          <div class="row">
-            <a class="btn" href="./login.html">Log in to analyze</a>
-            <a class="link" href="./signup.html">Create an account</a>
+        <div class="analyzer-panel" aria-label="Upload and analysis panel">
+          <form id="analyzerForm" novalidate>
+            <label class="file-label">
+              <span>Upload your resume (PDF, DOCX, or TXT)</span>
+              <input id="resumeFile" type="file" accept=".pdf,.doc,.docx,.txt" />
+            </label>
+
+            <button class="btn btn--full" type="submit">Analyze resume</button>
+          </form>
+
+          <div id="analysisState" class="analysis-state" hidden>
+            <div class="spinner" aria-hidden="true"></div>
+            <p>Analyzing your resume with AI…</p>
           </div>
+
+          <section id="analysisResults" class="analysis-results" aria-live="polite" hidden>
+            <h2>Analysis summary</h2>
+            <p class="analysis-summary" data-summary></p>
+
+            <div class="analysis-grid">
+              <div class="analysis-card">
+                <h3>Contact & basics</h3>
+                <ul data-contact></ul>
+              </div>
+              <div class="analysis-card">
+                <h3>Skills & keywords</h3>
+                <ul data-skills></ul>
+              </div>
+              <div class="analysis-card analysis-card--wide">
+                <h3>Recommendations</h3>
+                <ul data-recommendations></ul>
+              </div>
+            </div>
+          </section>
         </div>
       </section>
     </main>
