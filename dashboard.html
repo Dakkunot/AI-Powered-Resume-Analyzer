@@ -1,1 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./auth.js" defer></script>
+    <script defer>
+      window.addEventListener("DOMContentLoaded", () => {
+        window.AuthDemo.initDashboardPage();
+      });
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container container--wide site-header-inner">
+        <div class="brand brand--hero">
+          <a href="./index.html" class="brand-link">
+            <div class="logo" aria-hidden="true"></div>
+            <span class="brand-title">Resume Analyzer</span>
+          </a>
+        </div>
+        <nav class="nav-links" aria-label="Primary">
+          <a href="./login.html" class="link">Login</a>
+          <a href="./signup.html" class="link">Sign Up</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container container--wide">
+      <section class="card card--hero" aria-label="Dashboard">
+        <div class="dashboard-grid">
+          <div>
+            <h1>Dashboard</h1>
+            <p class="subtitle" style="margin-bottom: 14px">
+              You’re logged in as <span class="pill" data-who></span>
+            </p>
+
+            <div class="message" data-kind="ok">
+              Your most recent resume analysis is shown on the right. You can re-analyze from the home page at any time.
+            </div>
+
+            <section class="analysis-history" aria-label="Recent analyses">
+              <h2>Recent analyses</h2>
+              <p class="small" style="margin-bottom: 8px">Up to your last 10 uploads.</p>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Estimated experience</th>
+                    <th>Skills detected</th>
+                  </tr>
+                </thead>
+                <tbody data-history-rows>
+                  <tr class="empty">
+                    <td colspan="3">No analyses yet. Upload a resume from the home page to get started.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+          </div>
+
+          <section class="analysis-results" aria-label="Latest analysis" data-dashboard-results>
+            <h2>Latest analysis</h2>
+            <p class="analysis-summary" data-summary></p>
+
+            <div class="analysis-grid">
+              <div class="analysis-card">
+                <h3>Contact & basics</h3>
+                <ul data-contact></ul>
+              </div>
+              <div class="analysis-card">
+                <h3>Skills & keywords</h3>
+                <ul data-skills></ul>
+              </div>
+              <div class="analysis-card analysis-card--wide">
+                <h3>Recommendations</h3>
+                <ul data-recommendations></ul>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
+
 
