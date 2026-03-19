@@ -1,7 +1,12 @@
 const STORAGE_KEYS = {
-  users: "demo_users_v1",
-  session: "demo_session_v1",
+  users: "demo_users_v2",
+  session: "demo_session_v2",
 };
+
+function clearLegacyStorage() {
+  localStorage.removeItem("demo_users_v1");
+  localStorage.removeItem("demo_session_v1");
+}
 
 function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase();
@@ -47,15 +52,6 @@ function validatePassword(pw) {
   return null;
 }
 
-function upsertDemoUserSeed() {
-  const users = loadUsers();
-  const demoEmail = "demo@example.com";
-  if (!users.some((u) => u.email === demoEmail)) {
-    users.push({ email: demoEmail, password: "password123", createdAt: Date.now() });
-    saveUsers(users);
-  }
-}
-
 function showMessage(el, kind, text) {
   if (!el) return;
   if (!text) {
@@ -72,14 +68,12 @@ function showMessage(el, kind, text) {
 function requireLoggedInOrRedirect() {
   const session = getSession();
   if (!session || !session.email) {
-    window.location.href = "./index.html";
+    window.location.href = "./login.html";
   }
   return session;
 }
 
 function initLoginPage() {
-  upsertDemoUserSeed();
-
   const form = document.querySelector("[data-form='login']");
   const emailInput = document.querySelector("#email");
   const passwordInput = document.querySelector("#password");
@@ -142,7 +136,7 @@ function initSignupPage() {
     users.push({ email, password, createdAt: Date.now() });
     saveUsers(users);
 
-    window.location.href = "./index.html?registered=1";
+    window.location.href = "./login.html?registered=1";
   });
 }
 
@@ -155,11 +149,12 @@ function initDashboardPage() {
 
   logoutBtn?.addEventListener("click", () => {
     clearSession();
-    window.location.href = "./index.html";
+    window.location.href = "./login.html";
   });
 }
 
 function initCommon() {
+  clearLegacyStorage();
   const message = document.querySelector("[data-message]");
   const params = new URLSearchParams(window.location.search);
   if (params.get("registered") === "1") {
