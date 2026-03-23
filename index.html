@@ -7,6 +7,17 @@
     <link rel="stylesheet" href="./styles.css" />
     <script src="./auth.js" defer></script>
     <script src="./resume-analyzer.js" defer></script>
+
+    <!-- In-browser PDF/DOCX parsing (GitHub Pages only) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.6.82/pdf.min.js"></script>
+    <script>
+      // pdf.js requires its worker file for best performance.
+      if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.6.82/pdf.worker.min.js";
+      }
+    </script>
+    <script src="https://unpkg.com/mammoth@1.4.24/mammoth.browser.min.js"></script>
   </head>
   <body>
     <header class="site-header">
@@ -37,29 +48,44 @@
 
           <ul class="hero-highlights" aria-label="Key benefits">
             <li>Parse contact and experience details in seconds</li>
-            <li>Check for role‑specific keywords and skills</li>
-            <li>Get clear, human‑readable improvement tips</li>
+            <li>Score your resume against a pasted job description</li>
+            <li>Get clear, human‑readable rewrite suggestions</li>
           </ul>
         </div>
 
         <div class="analyzer-panel" aria-label="Upload and analysis panel">
           <form id="analyzerForm" novalidate>
             <label class="file-label">
-              <span>Upload your resume (PDF, DOCX, or TXT)</span>
-              <input id="resumeFile" type="file" accept=".pdf,.doc,.docx,.txt" />
+              <span>Upload your resume (PDF or DOCX)</span>
+              <input id="resumeFile" type="file" accept=".pdf,.docx" />
             </label>
 
-            <button class="btn btn--full" type="submit">Analyze resume</button>
+            <label>
+              <span>Job description (paste)</span>
+              <textarea
+                id="jobDescription"
+                required
+                rows="6"
+                placeholder="Paste the job posting text here to get an accurate match score and targeted rewrites."
+              ></textarea>
+            </label>
+
+            <button class="btn btn--full" type="submit">Analyze resume match</button>
           </form>
 
           <div id="analysisState" class="analysis-state" hidden>
             <div class="spinner" aria-hidden="true"></div>
-            <p>Analyzing your resume with AI…</p>
+            <p>Parsing your resume and calculating match score…</p>
           </div>
 
           <section id="analysisResults" class="analysis-results" aria-live="polite" hidden>
             <h2>Analysis summary</h2>
             <p class="analysis-summary" data-summary></p>
+
+            <div class="match-meter" role="img" aria-label="Match score meter">
+              <div class="match-meter__bar" data-match-meter></div>
+            </div>
+            <p class="small" data-match-score></p>
 
             <div class="analysis-grid">
               <div class="analysis-card">
@@ -67,12 +93,16 @@
                 <ul data-contact></ul>
               </div>
               <div class="analysis-card">
-                <h3>Skills & keywords</h3>
-                <ul data-skills></ul>
+                <h3>Strengths vs Job</h3>
+                <ul data-strengths></ul>
               </div>
               <div class="analysis-card analysis-card--wide">
-                <h3>Recommendations</h3>
-                <ul data-recommendations></ul>
+                <h3>Gaps & rewrite suggestions</h3>
+                <ul data-gaps></ul>
+
+                <h3 class="analysis-subheading">Rewrite suggestions</h3>
+                <p class="analysis-summary" data-rewrite-summary></p>
+                <ul data-rewrite-bullets></ul>
               </div>
             </div>
           </section>
@@ -85,7 +115,7 @@
           <article class="feature-card">
             <div class="feature-badge">1</div>
             <h3>Upload</h3>
-            <p>Select a PDF, DOCX, or TXT resume and we’ll extract key details.</p>
+            <p>Select a PDF or DOCX resume and we’ll extract key details.</p>
           </article>
           <article class="feature-card">
             <div class="feature-badge">2</div>
