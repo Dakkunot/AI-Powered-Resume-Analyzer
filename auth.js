@@ -158,20 +158,42 @@ function initDashboardPage() {
     const resultsRoot = document.querySelector("[data-dashboard-results]");
     const summaryEl = resultsRoot?.querySelector("[data-summary]");
     const contactEl = resultsRoot?.querySelector("[data-contact]");
-    const skillsEl = resultsRoot?.querySelector("[data-skills]");
-    const recsEl = resultsRoot?.querySelector("[data-recommendations]");
+    const strengthsEl = resultsRoot?.querySelector("[data-strengths]");
+    const gapsEl = resultsRoot?.querySelector("[data-gaps]");
+    const matchBarEl = resultsRoot?.querySelector("[data-match-meter]");
+    const matchScoreEl = resultsRoot?.querySelector("[data-match-score]");
+    const rewriteSummaryEl = resultsRoot?.querySelector("[data-rewrite-summary]");
+    const rewriteBulletsEl = resultsRoot?.querySelector("[data-rewrite-bullets]");
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
 
     if (historyBody) {
       historyBody.innerHTML = "";
       if (!list.length) {
-        historyBody.innerHTML = '<tr class="empty"><td colspan="3">No analyses yet. Upload a resume from the home page to get started.</td></tr>';
+        historyBody.innerHTML = '<tr class="empty"><td colspan="4">No analyses yet. Upload a resume from the home page to get started.</td></tr>';
       } else {
         historyBody.innerHTML = list
           .map((item) => {
             const date = new Date(item.analyzedAt).toLocaleString();
             const exp = item.experienceYears != null ? `${item.experienceYears}+ yrs` : "N/A";
-            const skills = (item.skills || []).slice(0, 4).join(", ") || "—";
-            return `<tr><td>${date}</td><td>${exp}</td><td>${skills}</td></tr>`;
+            const skills = (item.skills || []).slice(0, 4);
+            const skillsHtml = skills.length
+              ? skills.map((s) => `<span class="chip">${escapeHtml(s)}</span>`).join(" ")
+              : "—";
+
+            const score =
+              item.matchScore != null && item.matchScore !== undefined
+                ? `${escapeHtml(String(item.matchScore))}/100`
+                : "—";
+
+            return `<tr><td>${date}</td><td>${exp}</td><td>${skillsHtml}</td><td><span class="pill pill--score">${score}</span></td></tr>`;
           })
           .join("");
       }
@@ -184,6 +206,18 @@ function initDashboardPage() {
           latest.matchScore != null
             ? `This is your latest saved analysis. Match score: ${latest.matchScore}/100. Re-run the analyzer from the home page to refresh these insights.`
             : "This is your latest saved analysis. Re-run the analyzer from the home page to refresh these insights.";
+      }
+
+      if (matchScoreEl) {
+        matchScoreEl.textContent =
+          latest.matchScore != null ? `Match score: ${latest.matchScore}/100` : "";
+      }
+      if (matchBarEl) {
+        const s =
+          latest.matchScore != null && Number.isFinite(Number(latest.matchScore))
+            ? Math.max(0, Math.min(100, Number(latest.matchScore)))
+            : 0;
+        matchBarEl.style.width = `${s}%`;
       }
 
       if (contactEl) {
@@ -205,16 +239,45 @@ function initDashboardPage() {
         contactEl.innerHTML = items.join("");
       }
 
-      if (skillsEl) {
-        const skills = latest.skills || [];
-        skillsEl.innerHTML = skills.length
-          ? skills.map((s) => `<li>${s}</li>`).join("")
-          : "<li>No common technical skills from our catalog were clearly detected. Make sure your key skills are easy to skim.</li>";
+      if (strengthsEl) {
+        const strengths = Array.isArray(latest.strengths) ? latest.strengths : [];
+        strengthsEl.innerHTML = strengths.length
+          ? strengths.map((s) => `<li>${escapeHtml(s)}</li>`).join("")
+          : "<li>No strengths detected yet. Analyze a resume against a job description to see strengths here.</li>";
       }
 
-      if (recsEl) {
-        const recs = latest.recommendations || [];
-        recsEl.innerHTML = recs.length ? recs.map((r) => `<li>${r}</li>`).join("") : "<li>No recommendations stored.</li>";
+      if (gapsEl) {
+        const gaps = Array.isArray(latest.gaps) ? latest.gaps : [];
+        gapsEl.innerHTML = gaps.length
+          ? gaps.map((g) => `<li>${escapeHtml(g)}</li>`).join("")
+          : "<li>No gaps stored yet.</li>";
+      }
+
+      if (rewriteSummaryEl) {
+        const sr = latest.rewriteSuggestions?.summaryRewrite;
+        rewriteSummaryEl.textContent = sr ? String(sr) : "";
+      }
+
+      if (rewriteBulletsEl) {
+        const bullets = latest.rewriteSuggestions?.bulletRewrites;
+        const arr = Array.isArray(bullets) ? bullets : [];
+        rewriteBulletsEl.innerHTML = arr.length
+          ? arr
+              .slice(0, 6)
+              .map((b) => {
+                const rewritten = b?.rewritten ? String(b.rewritten) : "";
+                const whyArr = Array.isArray(b?.whyItMatches) ? b.whyItMatches : [];
+                const whyLine = whyArr.length
+                  ? `<div class="small">Why it matches: ${escapeHtml(whyArr.join(", "))}</div>`
+                  : "";
+                const original = b?.original ? String(b.original) : "";
+                const originalLine = original
+                  ? `<div class="small">Original bullet: ${escapeHtml(original)}</div>`
+                  : "";
+                return `<li><strong>Rewritten:</strong> ${escapeHtml(rewritten)}${originalLine}${whyLine}</li>`;
+              })
+              .join("")
+          : "<li>No rewrite suggestions stored yet.</li>";
       }
     } else if (resultsRoot) {
       resultsRoot.hidden = true;
