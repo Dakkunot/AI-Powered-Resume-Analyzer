@@ -363,6 +363,8 @@ function initResumeAnalyzer() {
   const jobDescriptionInput = document.getElementById("jobDescription");
   const state = document.getElementById("analysisState");
   const results = document.getElementById("analysisResults");
+  const messageEl = document.querySelector("[data-analyzer-message]");
+  const fileNameEl = document.querySelector("[data-file-name]");
 
   if (!form || !fileInput || !jobDescriptionInput || !results) return;
 
@@ -382,6 +384,19 @@ function initResumeAnalyzer() {
     if (submitBtn) submitBtn.disabled = isLoading;
   }
 
+  function showInlineMessage(kind, text) {
+    if (!messageEl) return;
+    if (!text) {
+      messageEl.hidden = true;
+      messageEl.textContent = "";
+      messageEl.removeAttribute("data-kind");
+      return;
+    }
+    messageEl.hidden = false;
+    messageEl.setAttribute("data-kind", kind || "error");
+    messageEl.textContent = text;
+  }
+
   function resetResults() {
     results.hidden = true;
     if (summaryEl) summaryEl.textContent = "";
@@ -389,6 +404,7 @@ function initResumeAnalyzer() {
     if (rewriteSummaryEl) rewriteSummaryEl.textContent = "";
     if (matchBarEl) matchBarEl.style.width = "0%";
     if (matchScoreEl) matchScoreEl.textContent = "";
+    showInlineMessage("", "");
   }
 
   // Ensure initial state is idle
@@ -397,19 +413,30 @@ function initResumeAnalyzer() {
     state.hidden = true;
   }
 
+  function updateSelectedFileName() {
+    if (!fileNameEl) return;
+    const file = fileInput.files && fileInput.files[0];
+    fileNameEl.textContent = file?.name ? file.name : "No file selected";
+  }
+  fileInput.addEventListener("change", () => {
+    updateSelectedFileName();
+    showInlineMessage("", "");
+  });
+  updateSelectedFileName();
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     resetResults();
 
     const file = fileInput.files && fileInput.files[0];
     if (!file) {
-      alert("Please choose a resume file to analyze.");
+      showInlineMessage("error", "Please choose a resume file to analyze.");
       return;
     }
 
     const jobDescription = String(jobDescriptionInput.value || "").trim();
     if (!jobDescription) {
-      alert("Please paste a job description to get a match score and targeted rewrites.");
+      showInlineMessage("error", "Please paste a job description to get a match score and targeted rewrites.");
       return;
     }
 
@@ -558,6 +585,7 @@ function initResumeAnalyzer() {
       }
 
       results.hidden = false;
+      showInlineMessage("ok", "Analysis complete. Results are shown below.");
 
       saveAnalysisForUser({
         emailInDoc: data.emailInDoc ?? null,
@@ -571,7 +599,7 @@ function initResumeAnalyzer() {
       });
     } catch (err) {
       console.error(err);
-      alert(err?.message || "Something went wrong while analyzing your resume. Please try again.");
+      showInlineMessage("error", err?.message || "Something went wrong while analyzing your resume. Please try again.");
     } finally {
       setLoading(false);
     }
