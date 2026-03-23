@@ -181,7 +181,9 @@ function initDashboardPage() {
     if (latest && resultsRoot) {
       if (summaryEl) {
         summaryEl.textContent =
-          "This is your latest saved analysis. Re-run the analyzer from the home page to refresh these insights.";
+          latest.matchScore != null
+            ? `This is your latest saved analysis. Match score: ${latest.matchScore}/100. Re-run the analyzer from the home page to refresh these insights.`
+            : "This is your latest saved analysis. Re-run the analyzer from the home page to refresh these insights.";
       }
 
       if (contactEl) {
