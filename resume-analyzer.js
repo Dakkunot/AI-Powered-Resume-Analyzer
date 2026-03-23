@@ -335,6 +335,91 @@ function buildHeuristicRewriteSuggestions({
   };
 }
 
+function calculateRoleAlignment(jobTerms, matchedTerms) {
+  if (!jobTerms.length) return 0;
+  const matched = matchedTerms.length;
+  return matched / jobTerms.length;
+}
+
+function calculateImpactScore(resumeText) {
+  const text = String(resumeText || "");
+  const hasMetrics = /(\d+%|\$[\d,]+|\b\d+\b)/.test(text);
+  const hasActionVerbs = /improved|increased|reduced|optimized|built|led|delivered|implemented/i.test(text);
+  const hasResultsLanguage = /impact|result|outcome|growth|efficiency|performance/i.test(text);
+
+  let points = 0;
+  if (hasMetrics) points += 0.45;
+  if (hasActionVerbs) points += 0.3;
+  if (hasResultsLanguage) points += 0.25;
+  return Math.min(1, points);
+}
+
+function calculateAtsFormatScore(resumeText, emailInDoc) {
+  const text = String(resumeText || "");
+  const hasSummary = /summary|objective/i.test(text);
+  const hasExperience = /experience|employment|work history/i.test(text);
+  const hasEducation = /education/i.test(text);
+  const hasSkills = /skills|technical skills|core skills/i.test(text);
+  const hasBullets = /(^|\n)\s*[-*•]/m.test(text);
+  const hasEmail = !!emailInDoc;
+  const hasLinkedIn = /linkedin\.com/i.test(text);
+
+  let score = 0;
+  if (hasSummary) score += 0.12;
+  if (hasExperience) score += 0.2;
+  if (hasEducation) score += 0.16;
+  if (hasSkills) score += 0.18;
+  if (hasBullets) score += 0.16;
+  if (hasEmail) score += 0.1;
+  if (hasLinkedIn) score += 0.08;
+  return Math.min(1, score);
+}
+
+function buildAtsAudit(resumeText, emailInDoc) {
+  const text = String(resumeText || "");
+  const checks = [
+    { label: "Contact email present", pass: !!emailInDoc, fix: "Add a professional email in your resume header." },
+    { label: "Summary section present", pass: /summary|objective/i.test(text), fix: "Add a short 2-3 line professional summary." },
+    { label: "Experience section present", pass: /experience|employment|work history/i.test(text), fix: "Include an Experience section with role, company, and dates." },
+    { label: "Education section present", pass: /education/i.test(text), fix: "Add an Education section with degree and institution." },
+    { label: "Skills section present", pass: /skills|technical skills|core skills/i.test(text), fix: "Add a dedicated Skills section aligned to target roles." },
+    { label: "Bullet-based achievements", pass: /(^|\n)\s*[-*•]/m.test(text), fix: "Use bullet points for responsibilities and measurable achievements." },
+    { label: "Quantified impact language", pass: /(\d+%|\$[\d,]+|\b\d+\b|improved|increased|reduced|optimized)/i.test(text), fix: "Add numbers/metrics and action verbs to demonstrate impact." },
+    { label: "LinkedIn profile included", pass: /linkedin\.com/i.test(text), fix: "Add your LinkedIn profile URL for recruiter verification." },
+  ];
+
+  const topFixes = checks.filter((c) => !c.pass).map((c) => c.fix).slice(0, 6);
+  return { checks, topFixes };
+}
+
+function buildWeightedScoring({
+  keywordCoverage,
+  similarity,
+  roleAlignment,
+  impactScore,
+  atsFormatScore,
+}) {
+  const dimensions = [
+    { key: "keywordCoverage", label: "Keyword coverage", weight: 0.35, score: keywordCoverage },
+    { key: "similarity", label: "Semantic similarity", weight: 0.2, score: similarity },
+    { key: "roleAlignment", label: "Role alignment", weight: 0.2, score: roleAlignment },
+    { key: "impactScore", label: "Achievement impact", weight: 0.15, score: impactScore },
+    { key: "atsFormatScore", label: "ATS format readiness", weight: 0.1, score: atsFormatScore },
+  ];
+
+  const weighted = dimensions.reduce((sum, d) => sum + d.score * d.weight, 0);
+  const overallScore = Math.round(weighted * 100);
+
+  return {
+    overallScore,
+    dimensions: dimensions.map((d) => ({
+      ...d,
+      percent: Math.round(d.score * 100),
+      weightedContribution: Math.round(d.score * d.weight * 100),
+    })),
+  };
+}
+
 function saveAnalysisForUser(payload) {
   if (typeof getSession !== "function") return;
   const session = getSession();
@@ -372,6 +457,9 @@ function initResumeAnalyzer() {
   const contactEl = results.querySelector("[data-contact]");
   const strengthsEl = results.querySelector("[data-strengths]");
   const gapsEl = results.querySelector("[data-gaps]");
+  const scoreBreakdownEl = results.querySelector("[data-score-breakdown]");
+  const atsAuditEl = results.querySelector("[data-ats-audit]");
+  const topFixesEl = results.querySelector("[data-top-fixes]");
   const matchBarEl = results.querySelector("[data-match-meter]");
   const matchScoreEl = results.querySelector("[data-match-score]");
   const rewriteSummaryEl = results.querySelector("[data-rewrite-summary]");
@@ -400,7 +488,9 @@ function initResumeAnalyzer() {
   function resetResults() {
     results.hidden = true;
     if (summaryEl) summaryEl.textContent = "";
-    [contactEl, strengthsEl, gapsEl, rewriteBulletsEl].forEach((el) => el && (el.innerHTML = ""));
+    [contactEl, strengthsEl, gapsEl, rewriteBulletsEl, scoreBreakdownEl, atsAuditEl, topFixesEl].forEach(
+      (el) => el && (el.innerHTML = "")
+    );
     if (rewriteSummaryEl) rewriteSummaryEl.textContent = "";
     if (matchBarEl) matchBarEl.style.width = "0%";
     if (matchScoreEl) matchScoreEl.textContent = "";
@@ -481,8 +571,17 @@ function initResumeAnalyzer() {
 
       const keywordCoverage = jobTerms.length ? matchedTerms.length / jobTerms.length : 0;
       const similarity = computeTfIdfCosineSimilarity(jobDescription, resumeText);
-      const matchScore = Math.round(100 * (0.65 * keywordCoverage + 0.35 * similarity));
-      const safeScore = Math.max(0, Math.min(100, matchScore));
+      const roleAlignment = calculateRoleAlignment(jobTerms, matchedTerms);
+      const impactScore = calculateImpactScore(resumeText);
+      const atsFormatScore = calculateAtsFormatScore(resumeText, emailInDoc);
+      const weighted = buildWeightedScoring({
+        keywordCoverage,
+        similarity,
+        roleAlignment,
+        impactScore,
+        atsFormatScore,
+      });
+      const safeScore = Math.max(0, Math.min(100, weighted.overallScore));
 
       const skills = analyzeSkills(resumeText);
       const { strengths, gaps } = buildLocalStrengthsAndGaps({
@@ -499,11 +598,15 @@ function initResumeAnalyzer() {
         missingTerms,
         detectedSkills: skills,
       });
+      const atsAudit = buildAtsAudit(resumeText, emailInDoc);
 
       const recommendations = [
         `Match score: ${safeScore}/100`,
-        `Top strengths: ${(strengths.slice(0, 2).join(" | ") || "").slice(0, 140)}`,
+        `Top strengths: ${(strengths.slice(0, 2).join(" | ") || "").slice(0, 160)}`,
         `Top gaps: ${missingTerms.slice(0, 6).join(", ") || "None detected"}`,
+        `ATS checks passed: ${
+          atsAudit.checks.filter((c) => c.pass).length
+        }/${atsAudit.checks.length}`,
         "Tailor your summary and bullets using the rewrite suggestions above.",
       ].filter(Boolean);
 
@@ -516,6 +619,9 @@ function initResumeAnalyzer() {
         skills,
         strengths,
         gaps,
+        scoreBreakdown: weighted.dimensions,
+        atsAudit: atsAudit.checks,
+        topFixes: atsAudit.topFixes,
         rewriteSuggestions,
         recommendations,
       };
@@ -557,6 +663,34 @@ function initResumeAnalyzer() {
         gapsEl.innerHTML = gaps.length ? gaps.map((g) => `<li>${escapeHtml(g)}</li>`).join("") : "<li>No gaps detected.</li>";
       }
 
+      if (scoreBreakdownEl) {
+        const dimensions = Array.isArray(data.scoreBreakdown) ? data.scoreBreakdown : [];
+        scoreBreakdownEl.innerHTML = dimensions.length
+          ? dimensions
+              .map(
+                (d) =>
+                  `<li><strong>${escapeHtml(d.label)}:</strong> ${escapeHtml(
+                    String(d.percent)
+                  )}% <span class="small">(weight ${escapeHtml(
+                    String(Math.round((d.weight || 0) * 100))
+                  )}%)</span></li>`
+              )
+              .join("")
+          : "<li>No score breakdown available.</li>";
+      }
+
+      if (atsAuditEl) {
+        const checks = Array.isArray(data.atsAudit) ? data.atsAudit : [];
+        atsAuditEl.innerHTML = checks.length
+          ? checks
+              .map((c) => {
+                const icon = c.pass ? "PASS" : "FIX";
+                return `<li><strong>${icon}:</strong> ${escapeHtml(c.label)}</li>`;
+              })
+              .join("")
+          : "<li>No ATS checks available.</li>";
+      }
+
       if (rewriteSummaryEl) {
         const sr = data.rewriteSuggestions?.summaryRewrite;
         rewriteSummaryEl.textContent = sr ? String(sr) : "";
@@ -584,6 +718,13 @@ function initResumeAnalyzer() {
           : "<li>No bullet rewrites returned.</li>";
       }
 
+      if (topFixesEl) {
+        const fixes = Array.isArray(data.topFixes) ? data.topFixes : [];
+        topFixesEl.innerHTML = fixes.length
+          ? fixes.map((f) => `<li>${escapeHtml(f)}</li>`).join("")
+          : "<li>Great job - no critical ATS fixes detected.</li>";
+      }
+
       results.hidden = false;
       showInlineMessage("ok", "Analysis complete. Results are shown below.");
 
@@ -595,6 +736,9 @@ function initResumeAnalyzer() {
         matchScore: data.matchScore ?? null,
         strengths: data.strengths ?? [],
         gaps: data.gaps ?? [],
+        scoreBreakdown: data.scoreBreakdown ?? [],
+        atsAudit: data.atsAudit ?? [],
+        topFixes: data.topFixes ?? [],
         rewriteSuggestions: data.rewriteSuggestions ?? null,
       });
     } catch (err) {
