@@ -26,11 +26,13 @@ body {
 }
 
 .container {
-  min-height: calc(100% - 64px);
+  min-height: calc(100vh - 70px);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px 20px 32px;
+  gap: 18px;
+  padding: 36px 20px 64px;
 }
 .container--wide {
   width: 100%;
@@ -49,7 +51,13 @@ body {
 }
 
 .site-header {
-  padding: 14px 0 6px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 12px 0;
+  background: rgba(11, 16, 32, 0.55);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .site-header-inner {
@@ -150,6 +158,29 @@ body {
   line-height: 1.4;
 }
 
+.small { font-size: 12px; color: var(--muted); }
+
+h1 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.12;
+  letter-spacing: -0.35px;
+}
+.card--hero h1 {
+  font-size: 36px;
+}
+h2 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.25;
+  letter-spacing: -0.2px;
+}
+h3 {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: -0.1px;
+}
+
 .hero-content {
   display: flex;
   flex-direction: column;
@@ -213,16 +244,28 @@ input:focus {
   background: linear-gradient(90deg, var(--accent), var(--accent-2));
   box-shadow: 0 16px 35px rgba(124, 92, 255, 0.22);
 }
+.btn:hover { filter: brightness(1.05); }
 .btn:active { transform: translateY(1px); }
 .btn--full { width: 100%; }
 .btn:disabled { opacity: 0.7; cursor: not-allowed; }
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.25), 0 16px 35px rgba(124, 92, 255, 0.22);
+}
 
 .link, a.link {
   color: rgba(255, 255, 255, 0.86);
   text-decoration: none;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.35);
+  border-bottom: none;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.12);
 }
-.link:hover { border-bottom-color: rgba(255, 255, 255, 0.75); }
+.link:hover {
+  background: rgba(15, 23, 42, 0.5);
+  border-color: rgba(255, 255, 255, 0.45);
+}
 
 .message {
   margin-top: 12px;
@@ -253,8 +296,7 @@ input:focus {
   border-radius: 12px;
   cursor: pointer;
 }
-
-.small { font-size: 12px; color: var(--muted); }
+.ghost:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.25); }
 
 .analyzer-panel {
   border-radius: 16px;
@@ -270,8 +312,27 @@ input:focus {
   gap: 8px;
   font-size: 13px;
   color: var(--muted);
+  padding: 16px 14px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+  position: relative;
 }
-.file-label input[type="file"] { margin-top: 4px; }
+.file-label:hover {
+  transform: translateY(-1px);
+  border-color: rgba(124, 92, 255, 0.65);
+  background: rgba(0, 0, 0, 0.28);
+}
+.file-label input[type="file"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  margin: 0;
+}
 
 .analysis-state {
   display: flex;
@@ -341,9 +402,62 @@ input:focus {
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   text-align: left;
 }
+.analysis-history thead th {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 650;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
 .analysis-history tr.empty td {
   font-style: italic;
   color: var(--muted);
+}
+
+/* Marketing strip (home page) */
+.features {
+  width: 100%;
+  margin-top: -6px;
+}
+.features-title {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.92);
+  margin: 0 0 12px;
+  letter-spacing: -0.2px;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.feature-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  padding: 16px 16px 14px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+}
+.feature-badge {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.96);
+  background: conic-gradient(from 180deg, var(--accent), var(--accent-2), var(--accent));
+  box-shadow: 0 14px 30px rgba(124, 92, 255, 0.22);
+  margin-bottom: 10px;
+}
+.feature-card h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+.feature-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 @keyframes spin {
@@ -352,5 +466,8 @@ input:focus {
 
 @media (max-width: 880px) {
   .card--hero { grid-template-columns: minmax(0, 1fr); }
+  .analysis-grid { grid-template-columns: 1fr; }
+  .analysis-card--wide { grid-column: auto; }
+  .features-grid { grid-template-columns: 1fr; }
 }
 
