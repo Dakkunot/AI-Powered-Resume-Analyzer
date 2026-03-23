@@ -57,6 +57,7 @@
           <form id="analyzerForm" novalidate>
             <label class="file-label">
               <span>Upload your resume (PDF or DOCX)</span>
+              <span class="small" data-file-name>No file selected</span>
               <input id="resumeFile" type="file" accept=".pdf,.docx" />
             </label>
 
@@ -72,6 +73,8 @@
 
             <button class="btn btn--full" type="submit">Analyze resume match</button>
           </form>
+
+          <p class="message" data-analyzer-message hidden></p>
 
           <div id="analysisState" class="analysis-state" hidden>
             <div class="spinner" aria-hidden="true"></div>
