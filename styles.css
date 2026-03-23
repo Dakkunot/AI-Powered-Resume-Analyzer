@@ -458,8 +458,15 @@ textarea:focus {
 .table-wrap {
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  overflow: hidden;
+  overflow: auto;
   background: rgba(0, 0, 0, 0.18);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
 }
 
 .analysis-history table {
