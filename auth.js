@@ -185,7 +185,9 @@ function initDashboardPage() {
             const exp = item.experienceYears != null ? `${item.experienceYears}+ yrs` : "N/A";
             const skills = (item.skills || []).slice(0, 4);
             const skillsHtml = skills.length
-              ? skills.map((s) => `<span class="chip">${escapeHtml(s)}</span>`).join(" ")
+              ? `<div class="chips">${skills
+                  .map((s) => `<span class="chip">${escapeHtml(s)}</span>`)
+                  .join("")}</div>`
               : "—";
 
             const score =
